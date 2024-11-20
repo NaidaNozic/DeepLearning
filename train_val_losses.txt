@@ -1,0 +1,106 @@
+Training model 1 with architecture: [8, 50, 1]
+Epoch [1/200] Train Loss: 1.455, Validation Loss: 0.723
+Epoch [21/200] Train Loss: 0.346, Validation Loss: 0.376
+Epoch [41/200] Train Loss: 0.312, Validation Loss: 0.339
+Epoch [61/200] Train Loss: 0.301, Validation Loss: 0.327
+Epoch [81/200] Train Loss: 0.293, Validation Loss: 0.326
+Epoch [101/200] Train Loss: 0.292, Validation Loss: 0.317
+Epoch [121/200] Train Loss: 0.285, Validation Loss: 0.321
+Epoch [141/200] Train Loss: 0.285, Validation Loss: 0.313
+Epoch [161/200] Train Loss: 0.283, Validation Loss: 0.315
+Epoch [181/200] Train Loss: 0.279, Validation Loss: 0.321
+Model 1 RMSE on test set: 0.550
+
+Training model 2 with architecture: [8, 100, 50, 1]
+Epoch [1/200] Train Loss: 0.911, Validation Loss: 0.532
+Epoch [21/200] Train Loss: 0.326, Validation Loss: 0.350
+Epoch [41/200] Train Loss: 0.282, Validation Loss: 0.316
+Epoch [61/200] Train Loss: 0.264, Validation Loss: 0.315
+Epoch [81/200] Train Loss: 0.253, Validation Loss: 0.296
+Epoch [101/200] Train Loss: 0.237, Validation Loss: 0.303
+Epoch [121/200] Train Loss: 0.230, Validation Loss: 0.293
+Epoch [141/200] Train Loss: 0.222, Validation Loss: 0.294
+Epoch [161/200] Train Loss: 0.220, Validation Loss: 0.285
+Epoch [181/200] Train Loss: 0.213, Validation Loss: 0.281
+Model 2 RMSE on test set: 0.533
+
+Training model 3 with architecture: [8, 64, 32, 16, 1]
+Epoch [1/200] Train Loss: 1.078, Validation Loss: 0.567
+Epoch [21/200] Train Loss: 0.285, Validation Loss: 0.332
+Epoch [41/200] Train Loss: 0.266, Validation Loss: 0.297
+Epoch [61/200] Train Loss: 0.253, Validation Loss: 0.287
+Epoch [81/200] Train Loss: 0.251, Validation Loss: 0.287
+Epoch [101/200] Train Loss: 0.237, Validation Loss: 0.287
+Epoch [121/200] Train Loss: 0.232, Validation Loss: 0.290
+Epoch [141/200] Train Loss: 0.222, Validation Loss: 0.277
+Epoch [161/200] Train Loss: 0.218, Validation Loss: 0.277
+Epoch [181/200] Train Loss: 0.211, Validation Loss: 0.284
+Model 3 RMSE on test set: 0.511
+
+Training model 4 with architecture: [8, 100, 50, 10, 1]
+Epoch [1/200] Train Loss: 0.935, Validation Loss: 0.543
+Epoch [21/200] Train Loss: 0.290, Validation Loss: 0.306
+Epoch [41/200] Train Loss: 0.262, Validation Loss: 0.316
+Epoch [61/200] Train Loss: 0.249, Validation Loss: 0.305
+Epoch [81/200] Train Loss: 0.241, Validation Loss: 0.304
+Epoch [101/200] Train Loss: 0.232, Validation Loss: 0.303
+Epoch [121/200] Train Loss: 0.222, Validation Loss: 0.286
+Epoch [141/200] Train Loss: 0.210, Validation Loss: 0.297
+Epoch [161/200] Train Loss: 0.207, Validation Loss: 0.289
+Epoch [181/200] Train Loss: 0.196, Validation Loss: 0.307
+Model 4 RMSE on test set: 0.537
+
+Training model 5 with architecture: [8, 128, 64, 32, 1]
+Epoch [1/200] Train Loss: 0.725, Validation Loss: 0.499
+Epoch [21/200] Train Loss: 0.281, Validation Loss: 0.307
+Epoch [41/200] Train Loss: 0.255, Validation Loss: 0.300
+Epoch [61/200] Train Loss: 0.239, Validation Loss: 0.287
+Epoch [81/200] Train Loss: 0.221, Validation Loss: 0.287
+Epoch [101/200] Train Loss: 0.204, Validation Loss: 0.282
+Epoch [121/200] Train Loss: 0.194, Validation Loss: 0.282
+Epoch [141/200] Train Loss: 0.183, Validation Loss: 0.284
+Epoch [161/200] Train Loss: 0.176, Validation Loss: 0.304
+Epoch [181/200] Train Loss: 0.163, Validation Loss: 0.294
+Model 5 RMSE on test set: 0.535
+
+Training model 6 with architecture: [8, 256, 128, 64, 32, 1]
+Epoch [1/200] Train Loss: 0.631, Validation Loss: 0.464
+Epoch [21/200] Train Loss: 0.263, Validation Loss: 0.302
+Epoch [41/200] Train Loss: 0.220, Validation Loss: 0.282
+Epoch [61/200] Train Loss: 0.193, Validation Loss: 0.297
+Epoch [81/200] Train Loss: 0.162, Validation Loss: 0.288
+Epoch [101/200] Train Loss: 0.138, Validation Loss: 0.318
+Epoch [121/200] Train Loss: 0.121, Validation Loss: 0.327
+Epoch [141/200] Train Loss: 0.106, Validation Loss: 0.330
+Epoch [161/200] Train Loss: 0.093, Validation Loss: 0.312
+Epoch [181/200] Train Loss: 0.083, Validation Loss: 0.326
+Model 6 RMSE on test set: 0.580
+
+Training Loss Summary:
+     Model_1 Train Loss  Model_2 Train Loss  Model_3 Train Loss  \
+0              1.454915            0.910936            1.078057   
+1              0.588904            0.449931            0.479311   
+2              0.481829            0.419710            0.428108   
+3              0.440182            0.397271            0.403345   
+4              0.419981            0.385608            0.381616   
+..                  ...                 ...                 ...   
+195            0.277772            0.221012            0.207533   
+196            0.277260            0.204917            0.207540   
+197            0.277927            0.218046            0.207568   
+198            0.278692            0.203914            0.207293   
+199            0.280266            0.206879            0.206462   
+
+     Model_4 Train Loss  Model_5 Train Loss  Model_6 Train Loss  Epoch  
+0              0.935004            0.725363            0.631036      1  
+1              0.454050            0.427770            0.421664      2  
+2              0.413657            0.396447            0.390282      3  
+3              0.390425            0.374600            0.376695      4  
+4              0.368785            0.365618            0.353757      5  
+..                  ...                 ...                 ...    ...  
+195            0.189770            0.157568            0.076245    196  
+196            0.190065            0.158611            0.079403    197  
+197            0.188706            0.157830            0.076340    198  
+198            0.190732            0.155320            0.076259    199  
+199            0.188394            0.153459            0.075656    200  
+
+[200 rows x 7 columns]
