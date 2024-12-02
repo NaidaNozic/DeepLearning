@@ -477,9 +477,8 @@ print(best_loss_summary)
 # 
 # This structure defines the number of neurons in each layer, from the input to the output, with three hidden layers in between.
 # 
-# It was chosen due to the lowest Root Mean Squared Error (RMSE) on test set: 0.511.
 # 
-# For the loss function we have used Mean Squared Error (MSE). The optimizer is Adam and the learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
+# For the loss function we have used Mean Squared Error (MSE). The optimizer is RMSprop and the learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
 # 
 # For the activation function we have utilized ReLU. However, the output layer does not have an activation function, since we expect a continuous value in the regression task.
 
