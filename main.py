@@ -364,16 +364,19 @@ def create_model(architecture):
 # Loss function
 criterion = nn.MSELoss()
 
-# Training function with validation loss tracking
-def train(model_inp, num_epochs=200):
+# Training function with early stopping and validation loss tracking
+def train(model_inp, num_epochs=200, patience=40, print_interval=10):
     adjusted_lr = 0.0001 * (batch_size ** 0.5)
     optimizer = torch.optim.RMSprop(model_inp.parameters(), lr=adjusted_lr)
     
     train_losses = []
     val_losses = []
     best_val_loss = float('inf')
-    best_train_loss = None 
+    best_train_loss = None
+    best_epoch = None
+    epochs_without_improvement = 0  # Counter for early stopping
     
+    # Loop through epochs
     for epoch in range(num_epochs):
         running_train_loss = 0.0
         model_inp.train()
@@ -404,14 +407,25 @@ def train(model_inp, num_epochs=200):
         train_losses.append(avg_train_loss)
         val_losses.append(avg_val_loss)
 
-        # Track the best epoch based on validation loss
+        # If validation loss improves, save model and update best loss
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             best_train_loss = avg_train_loss
             best_epoch = epoch
+            epochs_without_improvement = 0  # Reset counter if validation loss improves
+            
+        else:
+            epochs_without_improvement += 1
+        
+        # Early stopping condition
+        if epochs_without_improvement >= patience:
+            print(f"Early stopping at epoch {epoch + 1} due to no improvement in validation loss.")
+            break
 
-        if epoch % 20 == 0:
+        # Print the best validation loss every `print_interval` epochs
+        if (epoch + 1) % print_interval == 0:
             print(f"Epoch [{epoch + 1}/{num_epochs}] Train Loss: {avg_train_loss:.3f}, Validation Loss: {avg_val_loss:.3f}")
+            print(f"Best Validation Loss: {best_val_loss:.3f} at Epoch {best_epoch + 1}")
 
     return train_losses, val_losses, best_train_loss, best_val_loss, best_epoch
 
@@ -432,7 +446,7 @@ for idx, architecture in enumerate(architectures):
     train_losses, val_losses, best_train_loss, best_val_loss_at_epoch, best_epoch = train(model, num_epochs=200)
     
     # Collect the final train and validation loss
-    for epoch in range(200):
+    for epoch in range(len(train_losses)):
         train_val_loss_data.append({
             'Model': f"Model_{idx + 1}",
             'Epoch': epoch + 1,  # Epoch starts from 1, not 0
@@ -466,19 +480,20 @@ print("\nBest Loss and Epoch Summary:")
 print(best_loss_summary)
 
 # %% [markdown]
-# ### Chosen Architecture: `[8, 64, 32, 16, 1]` due to lowest validation loss
+# ### Chosen Architecture: `[8, 100, 50, 10, 1]` due to lowest validation loss
 # This architecture represents a feedforward neural network with the following layers:
 # 
 # - **Input Layer:** 8 neurons
-# - **Hidden Layer 1:** 64 neurons
-# - **Hidden Layer 2:** 32 neurons
-# - **Hidden Layer 3:** 16 neurons
+# - **Hidden Layer 1:** 100 neurons
+# - **Hidden Layer 2:** 50 neurons
+# - **Hidden Layer 3:** 10 neurons
 # - **Output Layer:** 1 neuron
 # 
 # This structure defines the number of neurons in each layer, from the input to the output, with three hidden layers in between.
 # 
+# It was chosen due to the lowest validation loss set of 0.279
 # 
-# For the loss function we have used Mean Squared Error (MSE). The optimizer is RMSprop and the learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
+# For the loss function we have used Mean Squared Error (MSE). The optimizer is Adam and the learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
 # 
 # For the activation function we have utilized ReLU. However, the output layer does not have an activation function, since we expect a continuous value in the regression task.
 
@@ -692,7 +707,6 @@ for opt_config in optimizers:
         
         # Save the best model state to a file
         model_save_path = f"{model_save_dir}/best_model_{opt_config['name']}_LR{opt_config['params']['lr']}_{sched_config['name']}.pth"
-        print(f"Best model: {model_save_path}")
 
         # Save results
         results.append({
@@ -701,8 +715,7 @@ for opt_config in optimizers:
             "Scheduler": sched_config["name"],
             "Best Train Loss": best_train_loss,
             "Best Val Loss": best_val_loss,
-            "Best Epoch": best_epoch,
-            "Model Path": model_save_path
+            "Best Epoch": best_epoch
         })
 
 # Store results in a DataFrame
@@ -752,7 +765,7 @@ best_epoch = []
 best_model_state = []
         
 model = create_model(architecture)
-early_stopping = EarlyStopping(patience=20, delta=0.001)
+early_stopping = EarlyStopping(patience=40, delta=0.001)
 
 train_losses, val_losses, best_train_loss, best_val_loss, best_epoch, best_model_state = train_and_validate(
     model,
@@ -853,5 +866,200 @@ plt.title("Predictions vs Ground Truth (Test Set)")
 plt.legend()
 plt.grid(True)
 plt.show()
+
+# %% [markdown]
+# ## Task f)
+
+# %%
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    roc_curve,
+    confusion_matrix,
+    ConfusionMatrixDisplay
+)
+
+set_seed(seed)
+generator = torch.Generator()
+generator.manual_seed(seed)
+
+
+# Step 1: Load and Preprocess the Dataset
+X, y = fetch_california_housing(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=302)
+
+# Sanity check: Dataset shapes
+print(f"Initial shapes - X_train: {X_train.shape}, y_train: {y_train.shape}, X_test: {X_test.shape}, y_test: {y_test.shape}")
+
+# Standardize features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Sanity check: Feature scaling
+print(f"After scaling - X_train mean: {X_train.mean():.2f}, std: {X_train.std():.2f}")
+print(f"After scaling - X_test mean: {X_test.mean():.2f}, std: {X_test.std():.2f}")
+
+# Transform target into binary labels
+y_train = (y_train >= 2).astype(int)  # 2 corresponds to $200,000
+y_test = (y_test >= 2).astype(int)
+
+# Sanity check: Unique values in target variables
+print(f"Unique values in y_train: {set(y_train)}, Unique values in y_test: {set(y_test)}")
+
+# Convert to PyTorch tensors
+X_train = torch.tensor(X_train, dtype=torch.float32)
+X_test = torch.tensor(X_test, dtype=torch.float32)
+y_train = torch.tensor(y_train, dtype=torch.float32).unsqueeze(1)
+y_test = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
+
+# Print dimensions for verification
+print(f"Final shapes - X_train: {X_train.shape}, y_train: {y_train.shape}, X_test: {X_test.shape}, y_test: {y_test.shape}")
+
+# Step 2: Define the Model Architecture
+class BinaryClassifier(nn.Module):
+    def __init__(self, architecture):
+        super(BinaryClassifier, self).__init__()
+        layers = []
+        for i in range(len(architecture) - 1):
+            layers.append(nn.Linear(architecture[i], architecture[i + 1]))
+            if i < len(architecture) - 2:
+                layers.append(nn.ReLU())
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.model(x)
+
+architecture = [8, 64, 32, 16, 1]  # Same as regression, with 1 output for binary classification
+model = BinaryClassifier(architecture)
+print("Model architecture:")
+print(model)
+
+# Step 3: Define Loss, Optimizer, DataLoader, and Scheduler
+criterion = nn.BCEWithLogitsLoss()
+optimizer = Adam(model.parameters(), lr=1e-2)
+scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
+batch_size = 50
+
+train_dataset = TensorDataset(X_train, y_train)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_dataset = TensorDataset(X_test, y_test)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+test_dataset = TensorDataset(X_test, y_test)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+# Step 4: Train the Model with Early Stopping
+num_epochs = 200
+train_losses = []
+val_losses = []
+best_val_loss = float('inf')
+patience = 8
+counter = 0
+best_model_path = 'best_model.pth'
+
+for epoch in range(num_epochs):
+    model.train()
+    epoch_train_loss = 0
+    for X_batch, y_batch in train_loader:
+        optimizer.zero_grad()
+        y_pred = model(X_batch)
+        loss = criterion(y_pred, y_batch)
+        loss.backward()
+        optimizer.step()
+        epoch_train_loss += loss.item()
+    epoch_train_loss /= len(train_loader)
+    train_losses.append(epoch_train_loss)
+
+    model.eval()
+    epoch_val_loss = 0
+    with torch.no_grad():
+        for X_batch, y_batch in val_loader:
+            y_pred = model(X_batch)
+            loss = criterion(y_pred, y_batch)
+            epoch_val_loss += loss.item()
+    epoch_val_loss /= len(val_loader)
+    val_losses.append(epoch_val_loss)
+
+    scheduler.step(epoch_val_loss)
+
+    if epoch % 5 == 0 or epoch == num_epochs - 1:
+        print(f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {epoch_train_loss:.4f}, Val Loss: {epoch_val_loss:.4f}")
+
+    if epoch_val_loss < best_val_loss:
+        best_val_loss = epoch_val_loss
+        counter = 0
+    else:
+        counter += 1
+        if counter >= patience:
+            print(f"Early stopping at epoch {epoch + 1}")
+            break
+
+# Load the best model
+model.load_state_dict(torch.load(best_model_path))
+# Step 5: Evaluate the Model
+model.eval()
+y_test_pred = []
+y_test_true = []
+
+with torch.no_grad():
+    for X_batch, y_batch in test_loader:
+        y_pred = torch.sigmoid(model(X_batch))
+        y_test_pred.extend(y_pred.squeeze().tolist())
+        y_test_true.extend(y_batch.squeeze().tolist())
+
+# Convert predictions to binary labels
+y_test_pred = np.array(y_test_pred)
+y_test_true = np.array(y_test_true)
+y_test_pred_labels = (y_test_pred >= 0.5).astype(int)
+
+# Calculate metrics
+accuracy = accuracy_score(y_test_true, y_test_pred_labels)
+precision = precision_score(y_test_true, y_test_pred_labels, zero_division=0)
+recall = recall_score(y_test_true, y_test_pred_labels, zero_division=0)
+f1 = f1_score(y_test_true, y_test_pred_labels, zero_division=0)
+roc_auc = roc_auc_score(y_test_true, y_test_pred)
+
+# Print metrics
+print(f"Accuracy: {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
+print(f"ROC AUC: {roc_auc:.4f}")
+
+# Generate and plot confusion matrix
+cm = confusion_matrix(y_test_true, y_test_pred_labels)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Below $200k', 'Above $200k'])
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.show()
+
+# Step 6: Plot Training and Validation Loss
+plt.figure()
+plt.plot(train_losses, label="Training Loss")
+plt.plot(val_losses, label="Validation Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.title("Training and Validation Loss Over Epochs")
+plt.legend()
+plt.grid()
+plt.show()
+
+# Plot ROC curve
+fpr, tpr, thresholds = roc_curve(y_test_true, y_test_pred)
+plt.figure()
+plt.plot(fpr, tpr, label=f"ROC Curve (AUC = {roc_auc:.4f})")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curve")
+plt.legend()
+plt.grid()
+plt.show()
+
+# %%
+
 
 
