@@ -491,7 +491,7 @@ print(best_loss_summary)
 # 
 # This structure defines the number of neurons in each layer, from the input to the output, with three hidden layers in between.
 # 
-# It was chosen due to the lowest validation loss set of 0.279
+# It was chosen due to the lowest validation loss.
 # 
 # For the loss function we have used Mean Squared Error (MSE). The learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
 # 
@@ -716,8 +716,7 @@ for opt_config in optimizers:
             "Scheduler": sched_config["name"],
             "Best Train Loss": best_train_loss,
             "Best Val Loss": best_val_loss,
-            "Best Epoch": best_epoch,
-            "Model Path": model_save_path
+            "Best Epoch": best_epoch
         })
 
 # Store results in a DataFrame
