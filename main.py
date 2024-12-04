@@ -480,7 +480,7 @@ print("\nBest Loss and Epoch Summary:")
 print(best_loss_summary)
 
 # %% [markdown]
-# ### Chosen Architecture: `[8, 100, 50, 10, 1]` due to lowest validation loss
+# ### Chosen Architecture: `[8, 64, 32, 16, 1]` due to lowest validation loss
 # This architecture represents a feedforward neural network with the following layers:
 # 
 # - **Input Layer:** 8 neurons
@@ -493,7 +493,7 @@ print(best_loss_summary)
 # 
 # It was chosen due to the lowest validation loss set of 0.279
 # 
-# For the loss function we have used Mean Squared Error (MSE). The optimizer is Adam and the learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
+# For the loss function we have used Mean Squared Error (MSE). The learning rate is adjusted depending on the batch size as follows: 0.0001 * (batch_size ** 0.5).
 # 
 # For the activation function we have utilized ReLU. However, the output layer does not have an activation function, since we expect a continuous value in the regression task.
 
@@ -707,6 +707,7 @@ for opt_config in optimizers:
         
         # Save the best model state to a file
         model_save_path = f"{model_save_dir}/best_model_{opt_config['name']}_LR{opt_config['params']['lr']}_{sched_config['name']}.pth"
+        print(f"Best model saved to {model_save_path}")
 
         # Save results
         results.append({
@@ -715,7 +716,8 @@ for opt_config in optimizers:
             "Scheduler": sched_config["name"],
             "Best Train Loss": best_train_loss,
             "Best Val Loss": best_val_loss,
-            "Best Epoch": best_epoch
+            "Best Epoch": best_epoch,
+            "Model Path": model_save_path
         })
 
 # Store results in a DataFrame
@@ -753,8 +755,8 @@ model_save_dir = "models_optimizer"
 criterion = nn.MSELoss()
 max_grad_norm = 5.0
 
-optimizer_config = {"name": "Adam", "optimizer": Adam, "params": {"lr": 1e-2}}
-scheduler_config = {"name": "ReduceLROnPlateau", "scheduler": ReduceLROnPlateau, "params": {"factor": 0.5, "patience": 5}}
+optimizer_config = {"name": "SGD_Momentum", "optimizer": SGD, "params": {"lr": 1e-2, "momentum": 0.9}}
+scheduler_config = {"name": "None", "scheduler": None, "params": {}}
 
 results = []
 train_losses = []
@@ -811,13 +813,12 @@ architecture = [8, 64, 32, 16, 1]
 max_grad_norm = 5.0
 
 final_model = create_model(architecture)
-final_optimizer = Adam(final_model.parameters(), lr=1e-2)
+optimizer_config = {"name": "SGD_Momentum", "optimizer": SGD, "params": {"lr": 1e-2, "momentum": 0.9}}
+final_optimizer = optimizer_config["optimizer"](final_model.parameters(), **optimizer_config["params"])
 final_criterion = nn.MSELoss()
 
-schedulers = [
-    {"name": "ReduceLROnPlateau", "scheduler": ReduceLROnPlateau, "params": {"factor": 0.5, "patience": 5}},
-]
-scheduler = schedulers[0]["scheduler"](final_optimizer, **schedulers[0]["params"])
+schedulers = []
+scheduler = None
 
 final_train_losses = []
 print("Final model training started.")
@@ -834,7 +835,9 @@ for epoch in range(num_epochs):
         epoch_loss += loss.item()
 
     final_train_losses.append(epoch_loss / len(combined_iter))
-    scheduler.step(epoch_loss / len(combined_iter))
+
+    if scheduler:
+        scheduler.step(epoch_loss / len(combined_iter))
     
     if epoch % 10 == 0 or epoch == num_epochs - 1:
         print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss / len(combined_iter):.4f}")
@@ -940,8 +943,10 @@ print(model)
 
 # Step 3: Define Loss, Optimizer, DataLoader, and Scheduler
 criterion = nn.BCEWithLogitsLoss()
-optimizer = Adam(model.parameters(), lr=1e-2)
-scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
+optimizer_config = {"name": "SGD_Momentum", "optimizer": SGD, "params": {"lr": 1e-2, "momentum": 0.9}}
+optimizer = optimizer_config["optimizer"](model.parameters(), **optimizer_config["params"])
+
+scheduler = None
 batch_size = 50
 
 train_dataset = TensorDataset(X_train, y_train)
@@ -984,7 +989,7 @@ for epoch in range(num_epochs):
     epoch_val_loss /= len(val_loader)
     val_losses.append(epoch_val_loss)
 
-    scheduler.step(epoch_val_loss)
+    #scheduler.step(epoch_val_loss)
 
     if epoch % 5 == 0 or epoch == num_epochs - 1:
         print(f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {epoch_train_loss:.4f}, Val Loss: {epoch_val_loss:.4f}")
