@@ -317,7 +317,7 @@ print(f"Best Batch Size: {best_result['Batch Size']} with "
       f"Train Loss: {best_result['Train Loss']:.3f}")
 
 # %% [markdown]
-# ### We will choose 50 as the batch size since it provided the lowest Validation Loss and Test RMSE.
+# ### We will choose 50 as the batch size since it provided the lowest Validation Loss.
 
 # %%
 set_seed(seed)
@@ -484,9 +484,9 @@ print(best_loss_summary)
 # This architecture represents a feedforward neural network with the following layers:
 # 
 # - **Input Layer:** 8 neurons
-# - **Hidden Layer 1:** 100 neurons
-# - **Hidden Layer 2:** 50 neurons
-# - **Hidden Layer 3:** 10 neurons
+# - **Hidden Layer 1:** 64 neurons
+# - **Hidden Layer 2:** 32 neurons
+# - **Hidden Layer 3:** 16 neurons
 # - **Output Layer:** 1 neuron
 # 
 # This structure defines the number of neurons in each layer, from the input to the output, with three hidden layers in between.
